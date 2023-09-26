@@ -3,4 +3,5 @@ RUN apk update && \
     apk add --no-cache \
     build-base \
     cmake \
-    asio-dev
+    asio-dev \
+    sqlite-dev

@@ -8,6 +8,7 @@ make install
 cd ../../../
 mkdir -p dist
 cd dist
+rm -f wzcalendar
 cmake ..
 make
 cd ..
