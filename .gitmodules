@@ -6,7 +6,7 @@
 	url = https://github.com/SqliteModernCpp/sqlite_modern_cpp
 [submodule "libs/jwt-cpp"]
 	path = libs/jwt-cpp
-	url = https://github.com/jwt-cpp
+	url = https://github.com/Thalhammer/jwt-cpp
 [submodule "libs/libbcrypt"]
 	path = libs/libbcrypt
 	url = https://github.com/trusch/libbcrypt
