@@ -4,4 +4,5 @@ RUN apk update && \
     build-base \
     cmake \
     asio-dev \
-    sqlite-dev
+    sqlite-dev \
+    libcrypto3

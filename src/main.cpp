@@ -1,12 +1,13 @@
-#include "crow.h"
-#include "app.h"
+#include <crow.h>
+#include <main.h>
 
-crow::SimpleApp app;
+App<AuthMiddleware> app;
 
 int main() {
     CROW_ROUTE(app, "/")([](){
         return "Hello world!";
     });
-    setup_user_routes();
+    setupUserRoutes();
+    setupScheduleRoutes();
     app.port(8080).multithreaded().run();
 }
