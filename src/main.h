@@ -32,6 +32,7 @@ struct ScheduleItem {
 
 // database methods
 User getUserByUsername(string username);
-vector<ScheduleItem> getScheduleItemsByUserIdAndDates(int userId);
+vector<ScheduleItem> getScheduleItemsByUserIdAndDates(int userId, string startDate, string endDate, int tagId=0);
+void insertScheduleItem(int userId, string name, string date, bool done, int tagId=0);
 
 #endif
