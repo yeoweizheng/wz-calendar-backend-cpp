@@ -67,12 +67,8 @@ void setupScheduleRoutes() {
         }
         else {
             auto body = json::load(req.body);
-            if (body["tag"].t() == json::type::Null) {
-                insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b());
-            } else {
-                int tagId = body["tag"].i();
-                insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
-            }
+            int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
+            insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
             return response(201);
         }
     });
@@ -82,12 +78,8 @@ void setupScheduleRoutes() {
         int userId = app.get_context<AuthMiddleware>(req).userId;
         if (req.method == HTTPMethod::PATCH) {
             auto body = json::load(req.body);
-            if (body["tag"].t() == json::type::Null) {
-                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b());
-            } else {
-                int tagId = body["tag"].i();
-                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
-            }
+            int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
+            updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
             return response(200);
         } else {
             deleteScheduleItem(userId, scheduleItemId);

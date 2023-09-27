@@ -34,8 +34,8 @@ struct ScheduleItem {
 User getUser(string username);
 vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDate, int tagId=0);
 vector<ScheduleItem> getScheduleItems(int userId, string searchStr);
-void insertScheduleItem(int userId, string name, string date, bool done, int tagId=0);
-void updateScheduleItem(int userId, int scheduleItemId, string name, string date, bool done, int tagId=0);
+void insertScheduleItem(int userId, string name, string date, bool done, int tagId);
+void updateScheduleItem(int userId, int scheduleItemId, string name, string date, bool done, int tagId);
 void deleteScheduleItem(int userId, int scheduleItemId);
 
 #endif
