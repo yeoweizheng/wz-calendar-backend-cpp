@@ -31,8 +31,11 @@ struct ScheduleItem {
 };
 
 // database methods
-User getUserByUsername(string username);
-vector<ScheduleItem> getScheduleItemsByUserIdAndDates(int userId, string startDate, string endDate, int tagId=0);
+User getUser(string username);
+vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDate, int tagId=0);
+vector<ScheduleItem> getScheduleItems(int userId, string searchStr);
 void insertScheduleItem(int userId, string name, string date, bool done, int tagId=0);
+void updateScheduleItem(int userId, int scheduleItemId, string name, string date, bool done, int tagId=0);
+void deleteScheduleItem(int userId, int scheduleItemId);
 
 #endif

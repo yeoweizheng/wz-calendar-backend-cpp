@@ -9,8 +9,8 @@ void setupUserRoutes() {
     .methods(HTTPMethod::POST)([](const request& req){
         auto reqBody = json::load(req.body);
         json::wvalue payload;
-        User user = getUserByUsername((string) reqBody["username"]);
-        if (BCrypt::validatePassword((string) reqBody["password"], user.password)) {
+        User user = getUser(reqBody["username"].s());
+        if (BCrypt::validatePassword(reqBody["password"].s(), user.password)) {
             time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
             stringstream nowSS;
             nowSS << put_time(localtime(&now), "%FT%T%z");
@@ -35,17 +35,23 @@ void setupScheduleRoutes() {
             char* endDateCStr = req.url_params.get("end_date");
             char* tagIdCStr = req.url_params.get("tag");
             char* searchCStr = req.url_params.get("search_str");
-            if (startDateCStr == nullptr || endDateCStr == nullptr) { return response(400); }
-            string startDate = string(startDateCStr);
-            string endDate = string(endDateCStr);
             vector<ScheduleItem> scheduleItems;
-            if (tagIdCStr != nullptr) {
-                string tagIdStr = string(tagIdCStr);
-                int tagId;
-                if (tagIdStr == "u") { tagId = -1; } else { tagId = stoi(tagIdStr); }
-                scheduleItems = getScheduleItemsByUserIdAndDates(userId, startDate, endDate, tagId);
-            } else {
-                scheduleItems = getScheduleItemsByUserIdAndDates(userId, startDate, endDate);
+            if (searchCStr != nullptr) {
+                string searchStr = string(searchCStr);
+                scheduleItems = getScheduleItems(userId, searchStr);
+            } 
+            else if (startDateCStr == nullptr || endDateCStr == nullptr) { return response(400); }
+            else {
+                string startDate = string(startDateCStr);
+                string endDate = string(endDateCStr);
+                if (tagIdCStr != nullptr) {
+                    string tagIdStr = string(tagIdCStr);
+                    int tagId;
+                    if (tagIdStr == "u") { tagId = -1; } else { tagId = stoi(tagIdStr); }
+                    scheduleItems = getScheduleItems(userId, startDate, endDate, tagId);
+                } else {
+                    scheduleItems = getScheduleItems(userId, startDate, endDate);
+                }
             }
             json::wvalue payload = json::wvalue::list();
             int i = 0;
@@ -61,15 +67,31 @@ void setupScheduleRoutes() {
         }
         else {
             auto body = json::load(req.body);
-            stringstream tagIdSS;
-            tagIdSS << body["tag"];
-            if (tagIdSS.str() == "null") {
-                insertScheduleItem(userId, (string) body["name"], (string) body["date"], (bool) body["done"]);
+            if (body["tag"].t() == json::type::Null) {
+                insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b());
             } else {
-                int tagId = stoi(tagIdSS.str());
-                insertScheduleItem(userId, (string) body["name"], (string) body["date"], (bool) body["done"], tagId);
+                int tagId = body["tag"].i();
+                insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
             }
             return response(201);
+        }
+    });
+    CROW_ROUTE(app, "/schedule_items/<int>/")
+    .CROW_MIDDLEWARES(app, AuthMiddleware)
+    .methods(HTTPMethod::PATCH, HTTPMethod::DELETE)([](const request& req, int scheduleItemId) {
+        int userId = app.get_context<AuthMiddleware>(req).userId;
+        if (req.method == HTTPMethod::PATCH) {
+            auto body = json::load(req.body);
+            if (body["tag"].t() == json::type::Null) {
+                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b());
+            } else {
+                int tagId = body["tag"].i();
+                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
+            }
+            return response(200);
+        } else {
+            deleteScheduleItem(userId, scheduleItemId);
+            return response(204);
         }
     });
 }
