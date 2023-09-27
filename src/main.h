@@ -4,9 +4,6 @@
 #include <crow.h>
 #include <string>
 #include <iostream>
-#include <sqlite_modern_cpp.h>
-#include <jwt-cpp/jwt.h>
-#include <bcrypt/BCrypt.hpp>
 #include <middlewares.h>
 using namespace std;
 using namespace crow;
@@ -19,11 +16,22 @@ void setupScheduleRoutes();
 
 // database structs
 struct User {
+    int id;
     string username;
     string password;
 };
 
+struct ScheduleItem {
+    int id;
+    string name;
+    string date;
+    int userId;
+    bool done;
+    int tagId;
+};
+
 // database methods
 User getUserByUsername(string username);
+vector<ScheduleItem> getScheduleItemsByUserIdAndDates(int userId);
 
 #endif
