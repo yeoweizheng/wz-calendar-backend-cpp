@@ -7,5 +7,5 @@ int main() {
     setupUserRoutes();
     setupScheduleRoutes();
     setupTagRoutes();
-    app.port(8080).multithreaded().run();
+    app.port(8002).concurrency(4).run();
 }
