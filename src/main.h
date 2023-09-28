@@ -6,8 +6,10 @@
 #include <iostream>
 #include <middlewares.h>
 #include <models.h>
+#include <sqlite_modern_cpp.h>
 using namespace std;
 using namespace crow;
+using namespace sqlite;
 
 extern App<CORSMiddleware, AuthMiddleware> app;
 
@@ -15,6 +17,9 @@ extern App<CORSMiddleware, AuthMiddleware> app;
 void setupUserRoutes();
 void setupScheduleRoutes();
 void setupTagRoutes();
+
+// database instance
+extern unique_ptr<database> db;
 
 // database methods
 User getUser(string username);

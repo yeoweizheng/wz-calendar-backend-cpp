@@ -14,6 +14,15 @@ COPY CMakeLists.txt ./
 COPY build.sh ./
 RUN ./build.sh
 
-ENTRYPOINT ["/wzcalendar/dist/wzcalendar"]
+FROM alpine:3.18
+RUN apk update && \
+    apk add --no-cache \
+    asio-dev \
+    sqlite-dev \
+    libcrypto3
+
+COPY --from=build /wzcalendar/dist/wzcalendar /wzcalendar
+
+ENTRYPOINT ["/wzcalendar"]
 
 # docker run --name wzcalendar -v $PWD/db/:/mnt/ --network host -t -d wzcalendar:latest
