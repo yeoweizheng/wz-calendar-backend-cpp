@@ -1,8 +1,10 @@
 #include <main.h>
+#include <models.h>
 #include <bcrypt/BCrypt.hpp>
 #include <jwt-cpp/jwt.h>
 #include <chrono>
 #include <constants.h>
+#include <exception>
 
 void setupUserRoutes() {
     CROW_ROUTE(app, "/token/")
@@ -47,7 +49,12 @@ void setupScheduleRoutes() {
                 if (tagIdCStr != nullptr) {
                     string tagIdStr = string(tagIdCStr);
                     int tagId;
-                    if (tagIdStr == "u") { tagId = -1; } else { tagId = stoi(tagIdStr); }
+                    if (tagIdStr == "u") { 
+                        tagId = -1; 
+                    } else { 
+                        try { tagId = stoi(tagIdStr); }
+                        catch (exception &e) { return response(400); }
+                    }
                     scheduleItems = getScheduleItems(userId, startDate, endDate, tagId);
                 } else {
                     scheduleItems = getScheduleItems(userId, startDate, endDate);
@@ -56,11 +63,7 @@ void setupScheduleRoutes() {
             json::wvalue payload = json::wvalue::list();
             int i = 0;
             for (auto &scheduleItem : scheduleItems) {
-                payload[i]["id"] = scheduleItem.id;
-                payload[i]["name"] = scheduleItem.name;
-                payload[i]["date"] = scheduleItem.date;
-                payload[i]["done"] = scheduleItem.done;
-                if (scheduleItem.tagId == 0) { payload[i]["tagId"] = NULL; } else { payload[i]["tagId"] = scheduleItem.tagId; }
+                payload[i] = structToWValue(scheduleItem);
                 i++;
             }
             return response(payload);
@@ -68,21 +71,43 @@ void setupScheduleRoutes() {
         else {
             auto body = json::load(req.body);
             int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
-            insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
-            return response(201);
+            int scheduleItemId = insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
+            auto payload = json::wvalue(body);
+            payload["id"] = scheduleItemId;
+            return response(201, payload);
         }
     });
     CROW_ROUTE(app, "/schedule_items/<int>/")
     .CROW_MIDDLEWARES(app, AuthMiddleware)
-    .methods(HTTPMethod::PATCH, HTTPMethod::DELETE)([](const request& req, int scheduleItemId) {
+    .methods(HTTPMethod::GET, HTTPMethod::PATCH, HTTPMethod::DELETE)([](const request& req, int scheduleItemId) {
         int userId = app.get_context<AuthMiddleware>(req).userId;
-        if (req.method == HTTPMethod::PATCH) {
+        if (req.method == HTTPMethod::GET) {
+            ScheduleItem scheduleItem;
+            try {
+                scheduleItem = getScheduleItem(userId, scheduleItemId);
+            } catch (exception &e) {
+                return response(404);
+            }
+            auto payload = structToWValue(scheduleItem);
+            return response(payload);
+        }
+        else if (req.method == HTTPMethod::PATCH) {
             auto body = json::load(req.body);
             int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
-            updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
-            return response(200);
+            try {
+                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
+            } catch (exception &e) {
+                return response(404);
+            }
+            auto payload = json::wvalue(body);
+            payload["id"] = scheduleItemId;
+            return response(200, payload);
         } else {
-            deleteScheduleItem(userId, scheduleItemId);
+            try {
+                deleteScheduleItem(userId, scheduleItemId);
+            } catch (exception &e) {
+                return response(404);
+            }
             return response(204);
         }
     });

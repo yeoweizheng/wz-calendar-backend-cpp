@@ -5,6 +5,7 @@ add_executable(wzcalendar
     src/main.cpp
     src/routes.cpp
     src/db.cpp
+    src/utils.cpp
 )
 target_include_directories(wzcalendar PRIVATE src/)
 

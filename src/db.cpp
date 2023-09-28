@@ -1,6 +1,8 @@
 #include <main.h>
+#include <models.h>
 #include <sqlite_modern_cpp.h>
 #include <constants.h>
+#include <exception>
 using namespace sqlite;
 
 User getUser(string username) {
@@ -19,12 +21,7 @@ vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDa
     database db(DB_FILENAME);
     vector<ScheduleItem> scheduleItems;
     auto populateScheduleItems = [&](int id, string name, string date, bool done, int tagId) {
-        ScheduleItem scheduleItem;
-        scheduleItem.id = id;
-        scheduleItem.name = name;
-        scheduleItem.date = date;
-        scheduleItem.done = done;
-        scheduleItem.tagId = tagId;
+        ScheduleItem scheduleItem = { id, name, date, done, tagId };
         scheduleItems.push_back(scheduleItem);
     };
     if (tagId == 0) {
@@ -50,18 +47,13 @@ vector<ScheduleItem> getScheduleItems(int userId, string searchStr) {
     db << "SELECT id, name, date, done, tag_id FROM schedule_scheduleitem WHERE user_id = ? AND done = false AND name LIKE ?;"
         << userId << searchStr
         >> [&](int id, string name, string date, bool done, int tagId) {
-            ScheduleItem scheduleItem;
-            scheduleItem.id = id;
-            scheduleItem.name = name;
-            scheduleItem.date = date;
-            scheduleItem.done = done;
-            scheduleItem.tagId = tagId;
+            ScheduleItem scheduleItem = { id, name, date, done, tagId };
             scheduleItems.push_back(scheduleItem);
         };
     return scheduleItems;
 }
 
-void insertScheduleItem(int userId, string name, string date, bool done, int tagId) {
+int insertScheduleItem(int userId, string name, string date, bool done, int tagId) {
     database db(DB_FILENAME);
     if (tagId == 0) {
         db << "INSERT INTO schedule_scheduleitem (user_id, name, date, done) VALUES (?, ?, ?, ?);"
@@ -70,10 +62,32 @@ void insertScheduleItem(int userId, string name, string date, bool done, int tag
         db << "INSERT INTO schedule_scheduleitem (user_id, name, date, done, tag_id) VALUES (?, ?, ?, ?, ?);"
             << userId << name << date << done << tagId;
     }
+    return db.last_insert_rowid();
+}
+
+void checkScheduleItemExists(database db, int userId, int scheduleItemId) {
+    db << "SELECT COUNT(id) FROM schedule_scheduleitem WHERE id = ? AND user_id = ?;"
+        << scheduleItemId << userId
+        >> [](int count) {
+            if (count != 1) { throw runtime_error("Not found"); }
+        };
+}
+
+ScheduleItem getScheduleItem(int userId, int scheduleItemId) {
+    database db(DB_FILENAME);
+    checkScheduleItemExists(db, userId, scheduleItemId);
+    ScheduleItem scheduleItem;
+    db << "SELECT id, name, date, done, tag_id FROM schedule_scheduleitem WHERE user_id = ? AND id = ?;"
+        << userId << scheduleItemId
+        >> [&](int id, string name, string date, bool done, int tagId) {
+            scheduleItem = { id, name, date, done, tagId };
+        };
+    return scheduleItem;
 }
 
 void updateScheduleItem(int userId, int scheduleItemId, string name, string date, bool done, int tagId) {
     database db(DB_FILENAME);
+    checkScheduleItemExists(db, userId, scheduleItemId);
     if (tagId == 0) {
         db << "UPDATE schedule_scheduleitem SET name = ?, date = ?, done = ?, tag_id = NULL WHERE id = ? AND user_id = ?;"
             << name << date << done << scheduleItemId << userId;
@@ -85,6 +99,7 @@ void updateScheduleItem(int userId, int scheduleItemId, string name, string date
 
 void deleteScheduleItem(int userId, int scheduleItemId) {
     database db(DB_FILENAME);
+    checkScheduleItemExists(db, userId, scheduleItemId);
     db << "DELETE FROM schedule_scheduleitem WHERE id = ? AND user_id = ?;"
         << scheduleItemId << userId;
 }
