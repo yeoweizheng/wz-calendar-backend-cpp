@@ -1,6 +1,6 @@
 [submodule "libs/Crow"]
 	path = libs/Crow
-	url = https://github.com/CrowCpp/Crow
+	url = https://github.com/yeoweizheng/Crow
 [submodule "libs/sqlite_modern_cpp"]
 	path = libs/sqlite_modern_cpp
 	url = https://github.com/SqliteModernCpp/sqlite_modern_cpp
