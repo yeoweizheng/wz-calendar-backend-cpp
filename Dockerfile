@@ -11,8 +11,8 @@ WORKDIR /wzcalendar
 COPY src/ ./src/
 COPY libs/ ./libs/
 COPY CMakeLists.txt ./
-COPY run_build.sh ./
-RUN ./run_build.sh
+COPY build.sh ./
+RUN ./build.sh
 
 ENTRYPOINT ["/wzcalendar/dist/wzcalendar"]
 
