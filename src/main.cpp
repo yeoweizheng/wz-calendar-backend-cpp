@@ -1,13 +1,11 @@
 #include <crow.h>
 #include <main.h>
 
-App<AuthMiddleware> app;
+App<CORSMiddleware, AuthMiddleware> app;
 
 int main() {
-    CROW_ROUTE(app, "/")([](){
-        return "Hello world!";
-    });
     setupUserRoutes();
     setupScheduleRoutes();
+    setupTagRoutes();
     app.port(8080).multithreaded().run();
 }

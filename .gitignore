@@ -1,3 +1,4 @@
 dist/**
 libs/Crow/build/**
 *.sqlite3
+settings.json

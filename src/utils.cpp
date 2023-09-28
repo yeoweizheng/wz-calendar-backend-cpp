@@ -13,3 +13,10 @@ json::wvalue structToWValue(ScheduleItem scheduleItem) {
     if (scheduleItem.tagId == 0) { payload["tag"] = NULL; } else { payload["tag"] = scheduleItem.tagId; }
     return payload;
 }
+
+json::wvalue structToWValue(Tag tag) {
+    json::wvalue payload;
+    payload["id"] = tag.id;
+    payload["name"] = tag.name;
+    return payload;
+}

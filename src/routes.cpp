@@ -8,7 +8,7 @@
 
 void setupUserRoutes() {
     CROW_ROUTE(app, "/token/")
-    .methods(HTTPMethod::POST)([](const request& req){
+    .methods(HTTPMethod::POST, HTTPMethod::OPTIONS)([](const request& req){
         auto reqBody = json::load(req.body);
         json::wvalue payload;
         User user = getUser(reqBody["username"].s());
@@ -30,7 +30,7 @@ void setupUserRoutes() {
 void setupScheduleRoutes() {
     CROW_ROUTE(app, "/schedule_items/")
     .CROW_MIDDLEWARES(app, AuthMiddleware)
-    .methods(HTTPMethod::GET, HTTPMethod::POST)([](const request& req) {
+    .methods(HTTPMethod::GET, HTTPMethod::POST, HTTPMethod::OPTIONS)([](const request& req) {
         int userId = app.get_context<AuthMiddleware>(req).userId;
         if (req.method == HTTPMethod::GET) {
             char* startDateCStr = req.url_params.get("start_date");
@@ -67,19 +67,18 @@ void setupScheduleRoutes() {
                 i++;
             }
             return response(payload);
-        }
-        else {
+        } else {
             auto body = json::load(req.body);
             int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
             int scheduleItemId = insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["done"].b(), tagId);
             auto payload = json::wvalue(body);
             payload["id"] = scheduleItemId;
             return response(201, payload);
-        }
+        } 
     });
     CROW_ROUTE(app, "/schedule_items/<int>/")
     .CROW_MIDDLEWARES(app, AuthMiddleware)
-    .methods(HTTPMethod::GET, HTTPMethod::PATCH, HTTPMethod::DELETE)([](const request& req, int scheduleItemId) {
+    .methods(HTTPMethod::GET, HTTPMethod::PATCH, HTTPMethod::DELETE, HTTPMethod::OPTIONS)([](const request& req, int scheduleItemId) {
         int userId = app.get_context<AuthMiddleware>(req).userId;
         if (req.method == HTTPMethod::GET) {
             ScheduleItem scheduleItem;
@@ -110,5 +109,63 @@ void setupScheduleRoutes() {
             }
             return response(204);
         }
+    });
+}
+
+void setupTagRoutes() {
+    CROW_ROUTE(app, "/tags/")
+    .CROW_MIDDLEWARES(app, AuthMiddleware)
+    .methods(HTTPMethod::GET, HTTPMethod::POST, HTTPMethod::OPTIONS)([](const request& req) {
+        int userId = app.get_context<AuthMiddleware>(req).userId;
+        if (req.method == HTTPMethod::GET) {
+            vector<Tag> tags = getTags(userId);
+            json::wvalue payload = json::wvalue::list();
+            int i = 0;
+            for (auto &tag : tags) {
+                payload[i] = structToWValue(tag);
+                i++;
+            }
+            return response(payload);
+        }
+        else {
+            auto body = json::load(req.body);
+            int tagId = insertTag(userId, body["name"].s());
+            auto payload = json::wvalue(body);
+            payload["id"] = tagId;
+            return response(201, payload);
+        } 
+    });
+    CROW_ROUTE(app, "/tags/<int>/")
+    .CROW_MIDDLEWARES(app, AuthMiddleware)
+    .methods(HTTPMethod::GET, HTTPMethod::PATCH, HTTPMethod::DELETE, HTTPMethod::OPTIONS)([](const request& req, int tagId) {
+        int userId = app.get_context<AuthMiddleware>(req).userId;
+        if (req.method == HTTPMethod::GET) {
+            Tag tag;
+            try {
+                tag = getTag(userId, tagId);
+            } catch (exception &e) {
+                return response(404);
+            }
+            auto payload = structToWValue(tag);
+            return response(payload);
+        }
+        else if (req.method == HTTPMethod::PATCH) {
+            auto body = json::load(req.body);
+            try {
+                updateTag(userId, tagId, body["name"].s());
+            } catch (exception &e) {
+                return response(404);
+            }
+            auto payload = json::wvalue(body);
+            payload["id"] = tagId;
+            return response(200, payload);
+        } else {
+            try {
+                deleteTag(userId, tagId);
+            } catch (exception &e) {
+                return response(404);
+            }
+            return response(204);
+        } 
     });
 }

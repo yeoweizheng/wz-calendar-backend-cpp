@@ -17,4 +17,9 @@ struct ScheduleItem {
     int tagId;
 };
 
+struct Tag {
+    int id;
+    string name;
+};
+
 #endif

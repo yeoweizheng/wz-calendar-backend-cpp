@@ -10,6 +10,20 @@ using namespace std;
 using namespace crow;
 using namespace boost::algorithm;
 
+struct CORSMiddleware {
+    struct context {};
+    void before_handle(request& req, response& res, context& ctx) { }
+    void after_handle(request& req, response& res, context& ctx) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Headers", "*");
+        res.set_header("Access-Control-Allow-Methods", "*");
+        if (req.method == HTTPMethod::OPTIONS) {
+            res.code = 200;
+            res.end();
+        }
+    };
+};
+
 struct AuthMiddleware : ILocalMiddleware {
     struct context {
         int userId;
