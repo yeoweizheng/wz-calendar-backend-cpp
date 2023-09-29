@@ -55,7 +55,7 @@ int insertScheduleItem(int userId, string name, string date, bool done, int tagI
         *db << "INSERT INTO scheduleitem (user_id, name, date, done, tag_id) VALUES (?, ?, ?, ?, ?);"
             << userId << name << date << done << tagId;
     }
-    return (*db).last_insert_rowid();
+    return db->last_insert_rowid();
 }
 
 void checkScheduleItemExists(int userId, int scheduleItemId) {
@@ -108,7 +108,7 @@ vector<Tag> getTags(int userId) {
 int insertTag(int userId, string name) {
     *db << "INSERT INTO tag (user_id, name) VALUES (?, ?);"
         << userId << name;
-    return (*db).last_insert_rowid();
+    return db->last_insert_rowid();
 }
 
 void checkTagExists(int userId, int tagId) {

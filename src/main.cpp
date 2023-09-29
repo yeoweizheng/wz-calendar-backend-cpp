@@ -14,6 +14,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
     db = make_unique<database>(DB_FILENAME);
+    app.loglevel(LogLevel::Warning);
     setupUserRoutes();
     setupScheduleRoutes();
     setupTagRoutes();
