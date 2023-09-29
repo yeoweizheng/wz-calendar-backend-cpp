@@ -3,10 +3,10 @@
 	url = https://github.com/yeoweizheng/Crow
 [submodule "libs/sqlite_modern_cpp"]
 	path = libs/sqlite_modern_cpp
-	url = https://github.com/SqliteModernCpp/sqlite_modern_cpp
+	url = https://github.com/yeoweizheng/sqlite_modern_cpp
 [submodule "libs/jwt-cpp"]
 	path = libs/jwt-cpp
-	url = https://github.com/Thalhammer/jwt-cpp
+	url = https://github.com/yeoweizheng/jwt-cpp
 [submodule "libs/libbcrypt"]
 	path = libs/libbcrypt
-	url = https://github.com/trusch/libbcrypt
+	url = https://github.com/yeoweizheng/libbcrypt
