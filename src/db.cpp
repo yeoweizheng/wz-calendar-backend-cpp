@@ -138,6 +138,8 @@ void updateTag(int userId, int tagId, string name) {
 
 void deleteTag(int userId, int tagId) {
     checkTagExists(userId, tagId);
+    *db << "UPDATE scheduleitem SET tag_id = NULL WHERE tag_id = ? AND user_id = ?;"
+        << tagId << userId;
     *db << "DELETE FROM tag WHERE id = ? AND user_id = ?;"
         << tagId << userId;
 }
