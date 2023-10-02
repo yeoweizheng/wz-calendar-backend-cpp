@@ -88,40 +88,45 @@ void editUserMenu() {
         int userCount;
         *db << "SELECT COUNT(id) FROM user WHERE id = ?;" << userID >> [&](int c) {userCount = c;};
         if (userCount == 0) { cout << "Invalid user ID selected." << endl; continue; }
-        string choice;
-        cout << "\n[User Actions] (ID: " << userID << ")" << endl;
-        cout << "u> Change username" << endl;
-        cout << "p> Change password" << endl;
-        cout << "d> Delete user" << endl;
-        cout << "m> Back to user list" << endl;
-        cout << "Select an option: ";
-        cin >> choice;
-        if (choice == "u") {
-            while(1) {
-                string username;
-                cout << "Enter new username: ";
-                cin >> username;
-                if (userExists(username)) { cout << "Username already taken." << endl; continue;}
-                *db << "UPDATE user SET username = ? WHERE id = ?" << username << userID;
-                cout << "Username updated." << endl;
+        while(1) {
+            string choice;
+            cout << "\n[User Actions] (ID: " << userID << ")" << endl;
+            cout << "u> Change username" << endl;
+            cout << "p> Change password" << endl;
+            cout << "d> Delete user" << endl;
+            cout << "m> Back to user list" << endl;
+            cout << "Select an option: ";
+            cin >> choice;
+            if (choice == "u") {
+                while(1) {
+                    string username;
+                    cout << "Enter new username: ";
+                    cin >> username;
+                    if (userExists(username)) { cout << "Username already taken." << endl; continue;}
+                    *db << "UPDATE user SET username = ? WHERE id = ?" << username << userID;
+                    cout << "Username updated." << endl;
+                    break;
+                }
                 break;
-            }
-        } else if (choice == "p") {
-            char *passwordCStr = getpass("Password: ");
-            string password = string(passwordCStr);
-            string passwordHash = BCrypt::generateHash(password);
-            *db << "UPDATE user SET password = ? WHERE id = ?;" << passwordHash << userID;
-            cout << "Password updated." << endl;
-        } else if (choice == "d") {
-            string confirmation;
-            cout << "Are you sure? (type YES to confirm): ";
-            cin >> confirmation;
-            if (confirmation == "YES") {
-                *db << "DELETE FROM scheduleitem WHERE user_id = ?;" << userID;
-                *db << "DELETE FROM tag WHERE user_id = ?;" << userID;
-                *db << "DELETE FROM user WHERE id = ?;" << userID;
-                cout << "User deleted." << endl;
-            }
-        } 
+            } else if (choice == "p") {
+                char *passwordCStr = getpass("Password: ");
+                string password = string(passwordCStr);
+                string passwordHash = BCrypt::generateHash(password);
+                *db << "UPDATE user SET password = ? WHERE id = ?;" << passwordHash << userID;
+                cout << "Password updated." << endl;
+                break;
+            } else if (choice == "d") {
+                string confirmation;
+                cout << "Are you sure? (type YES to confirm): ";
+                cin >> confirmation;
+                if (confirmation == "YES") {
+                    *db << "DELETE FROM scheduleitem WHERE user_id = ?;" << userID;
+                    *db << "DELETE FROM tag WHERE user_id = ?;" << userID;
+                    *db << "DELETE FROM user WHERE id = ?;" << userID;
+                    cout << "User deleted." << endl;
+                }
+                break;
+            } else if (choice == "m") break;
+        }
     }
 }
