@@ -22,6 +22,7 @@ RUN apk update && \
     libcrypto3
 
 COPY --from=build /wzcalendar/dist/wzcalendar /wzcalendar
+COPY --from=build /wzcalendar/dist/manageusers /manageusers
 
 ENTRYPOINT ["/wzcalendar"]
 
