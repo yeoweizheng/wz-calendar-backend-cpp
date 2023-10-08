@@ -23,6 +23,8 @@ extern unique_ptr<database> db;
 
 // database methods
 User getUser(string username);
+User getUser(int userId);
+void updateUser(int userId, string username, string password);
 vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDate, int tagId=0);
 vector<ScheduleItem> getScheduleItems(int userId, string searchStr);
 ScheduleItem getScheduleItem(int userId, int scheduleItemId);

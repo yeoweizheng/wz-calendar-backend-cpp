@@ -2,7 +2,16 @@
 #include <models.h>
 #include <exception>
 
+void checkUserExists(string username) {
+    *db << "SELECT COUNT(id) FROM user WHERE username = ?;"
+        << username
+        >> [](int count) {
+            if (count != 1) { throw runtime_error("Not found"); }
+        };
+}
+
 User getUser(string username) {
+    checkUserExists(username);
     User user;
     *db << "SELECT id, username, password FROM user WHERE username = ?;" << username
         >> [&](int userId, string username, string password) {
@@ -11,6 +20,22 @@ User getUser(string username) {
             user.password = password;
         };
     return user;
+}
+
+User getUser(int userId) {
+    User user;
+    *db << "SELECT id, username, password FROM user WHERE id = ?;" << userId
+        >> [&](int userId, string username, string password) {
+            user.id = userId;
+            user.username = username;
+            user.password = password;
+        };
+    return user;
+}
+
+void updateUser(int userId, string username, string password) {
+    *db << "UPDATE user SET username = ?, password = ? WHERE id = ?;"
+        << username << password << userId;
 }
 
 vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDate, int tagId) {

@@ -11,7 +11,9 @@ void setupUserRoutes() {
     .methods(HTTPMethod::POST, HTTPMethod::OPTIONS)([](const request& req){
         auto reqBody = json::load(req.body);
         json::wvalue payload;
-        User user = getUser(reqBody["username"].s());
+        User user;
+        try { user = getUser(reqBody["username"].s()); }
+        catch (exception &e) { return response(401); }
         if (BCrypt::validatePassword(reqBody["password"].s(), user.password)) {
             time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
             stringstream nowSS;
@@ -23,6 +25,20 @@ void setupUserRoutes() {
             return response(payload);
         } else {
             return response(401);
+        }
+    });
+    CROW_ROUTE(app, "/update_password/")
+    .CROW_MIDDLEWARES(app, AuthMiddleware)
+    .methods(HTTPMethod::GET, HTTPMethod::POST, HTTPMethod::OPTIONS)([](const request& req){
+        int userId = app.get_context<AuthMiddleware>(req).userId;
+        auto reqBody = json::load(req.body);
+        User user = getUser(userId);
+        if (BCrypt::validatePassword(reqBody["currentPassword"].s(), user.password)) {
+            string newPasswordHash = BCrypt::generateHash(reqBody["newPassword"].s());
+            updateUser(userId, user.username, newPasswordHash);
+            return response(200);
+        } else {
+            return response(400);
         }
     });
 }
