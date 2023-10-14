@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
 void initDB() {
     *db << "CREATE TABLE IF NOT EXISTS user (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"username\" varchar(150) NOT NULL UNIQUE, \"password\" varchar(128) NOT NULL);";
-    *db << "CREATE TABLE IF NOT EXISTS scheduleitem (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" varchar(512) NOT NULL, \"date\" date NOT NULL, \"user_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, \"done\" bool NOT NULL, \"tag_id\" bigint NULL REFERENCES \"tag\" (\"id\") DEFERRABLE INITIALLY DEFERRED);";
+    *db << "CREATE TABLE IF NOT EXISTS scheduleitem (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" varchar(512) NOT NULL, \"date\" date NOT NULL, \"time\" time NULL, \"user_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, \"done\" bool NOT NULL, \"tag_id\" bigint NULL REFERENCES \"tag\" (\"id\") DEFERRABLE INITIALLY DEFERRED);";
     *db << "CREATE TABLE IF NOT EXISTS \"tag\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" varchar(100) NOT NULL, \"user_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED);";
     *db << "CREATE INDEX IF NOT EXISTS \"scheduleitem_tag_id\" ON \"scheduleitem\" (\"tag_id\");";
     *db << "CREATE INDEX IF NOT EXISTS \"scheduleitem_user_id\" ON \"scheduleitem\" (\"user_id\");";

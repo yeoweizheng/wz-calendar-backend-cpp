@@ -13,6 +13,7 @@ struct ScheduleItem {
     int id;
     string name;
     string date;
+    string time;
     bool done;
     int tagId;
 };
