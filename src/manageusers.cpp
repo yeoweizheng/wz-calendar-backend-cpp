@@ -11,6 +11,7 @@ unique_ptr<database> db;
 void initDB();
 void addUserMenu();
 void editUserMenu();
+void updateSecretMenu();
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -25,6 +26,7 @@ int main(int argc, char** argv) {
         cout << "i> Initialize database" << endl;
         cout << "a> Add user" << endl;
         cout << "e> Edit user" << endl;
+        cout << "s> Update JWT secret" << endl;
         cout << "Select an option: ";
         cin >> input;
         if (input == "i") {
@@ -33,6 +35,8 @@ int main(int argc, char** argv) {
             addUserMenu();
         } else if (input == "e") {
             editUserMenu();
+        } else if (input == "s") {
+            updateSecretMenu();
         }
     }
     return 0;
@@ -42,10 +46,13 @@ void initDB() {
     *db << "CREATE TABLE IF NOT EXISTS user (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"username\" varchar(150) NOT NULL UNIQUE, \"password\" varchar(128) NOT NULL);";
     *db << "CREATE TABLE IF NOT EXISTS scheduleitem (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" varchar(512) NOT NULL, \"date\" date NOT NULL, \"time\" time NULL, \"user_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, \"done\" bool NOT NULL, \"tag_id\" bigint NULL REFERENCES \"tag\" (\"id\") DEFERRABLE INITIALLY DEFERRED);";
     *db << "CREATE TABLE IF NOT EXISTS \"tag\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" varchar(100) NOT NULL, \"user_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED);";
+    *db << "CREATE TABLE IF NOT EXISTS \"keyvalue\" (\"key\" varchar(100) NOT NULL, \"value\" varchar(100) NOT NULL);";
     *db << "CREATE INDEX IF NOT EXISTS \"scheduleitem_tag_id\" ON \"scheduleitem\" (\"tag_id\");";
     *db << "CREATE INDEX IF NOT EXISTS \"scheduleitem_user_id\" ON \"scheduleitem\" (\"user_id\");";
     *db << "CREATE INDEX IF NOT EXISTS \"tag_user_id\" ON \"tag\" (\"user_id\");";
-    cout << "Database initialised successfully." << endl;
+    *db << "DELETE FROM keyvalue WHERE key = \"JWT_SECRET\";";
+    *db << "INSERT INTO keyvalue (key, value) VALUES (\"JWT_SECRET\", \"secret\")";
+    cout << "Database initialised successfully. Please remember to update JWT secret." << endl;
 }
 
 bool userExists(string username) {
@@ -129,4 +136,11 @@ void editUserMenu() {
             } else if (choice == "m") break;
         }
     }
+}
+
+void updateSecretMenu() {
+    char *secretCStr = getpass("Enter new JWT secret: ");
+    string secret = string(secretCStr);
+    *db << "UPDATE keyvalue SET value = ? WHERE key = \"JWT_SECRET\"" << secret;
+    cout << "JWT secret updated." << endl;
 }

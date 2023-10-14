@@ -2,6 +2,8 @@
 #include <main.h>
 #include <fstream>
 #include <exception>
+#include <db.h>
+#include <constants.h>
 
 App<CORSMiddleware, AuthMiddleware> app;
 unique_ptr<database> db;

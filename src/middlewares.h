@@ -6,6 +6,8 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <jwt-cpp/jwt.h>
 #include <constants.h>
+#include <db.h>
+
 using namespace std;
 using namespace crow;
 using namespace boost::algorithm;
@@ -32,7 +34,7 @@ struct AuthMiddleware : ILocalMiddleware {
         string token = trim_left_copy_if(req.get_header_value("Authorization"), is_any_of("JWT "));
         try {
             auto decoded = jwt::decode(token);
-            auto verifier = jwt::verify().allow_algorithm(jwt::algorithm::hs256{JWT_SECRET});
+            auto verifier = jwt::verify().allow_algorithm(jwt::algorithm::hs256(getJWTSecret()));
             verifier.verify(decoded);
             for (auto& e : decoded.get_payload_json()) {
                 stringstream keySS;

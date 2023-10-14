@@ -1,4 +1,5 @@
 #include <main.h>
+#include <db.h>
 #include <models.h>
 #include <bcrypt/BCrypt.hpp>
 #include <jwt-cpp/jwt.h>
@@ -21,7 +22,7 @@ void setupUserRoutes() {
             payload["token"] = jwt::create().set_type("JWT")
                 .set_payload_claim("userId", jwt::claim(string(to_string(user.id))))
                 .set_payload_claim("created", jwt::claim(string(nowSS.str())))
-                .sign(jwt::algorithm::hs256{JWT_SECRET});
+                .sign(jwt::algorithm::hs256{getJWTSecret()});
             return response(payload);
         } else {
             return response(401);

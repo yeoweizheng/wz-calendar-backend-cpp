@@ -189,3 +189,12 @@ void deleteTag(int userId, int tagId) {
     *db << "DELETE FROM tag WHERE id = ? AND user_id = ?;"
         << tagId << userId;
 }
+
+string getJWTSecret() {
+    string secret;
+    *db << "SELECT value FROM keyvalue WHERE key = \"JWT_SECRET\";"
+        >> [&](string s) {
+            secret = s;
+        };
+    return secret;
+}
