@@ -10,6 +10,7 @@ json::wvalue structToWValue(ScheduleItem scheduleItem) {
     payload["name"] = scheduleItem.name;
     payload["date"] = scheduleItem.date;
     payload["time"] = scheduleItem.time;
+    payload["notes"] = scheduleItem.notes;
     payload["done"] = scheduleItem.done;
     if (scheduleItem.tagId == 0) { payload["tag"] = NULL; } else { payload["tag"] = scheduleItem.tagId; }
     return payload;

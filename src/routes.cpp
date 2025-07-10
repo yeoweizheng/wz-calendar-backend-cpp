@@ -88,7 +88,7 @@ void setupScheduleRoutes() {
             auto body = json::load(req.body);
             int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
             int scheduleItemId;
-            try { scheduleItemId = insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["time"].s(), body["done"].b(), tagId); }
+            try { scheduleItemId = insertScheduleItem(userId, body["name"].s(), body["date"].s(), body["time"].s(), body["notes"].s(), body["done"].b(), tagId); }
             catch (exception &e) { return response(400); }
             auto payload = json::wvalue(body);
             payload["id"] = scheduleItemId;
@@ -113,7 +113,7 @@ void setupScheduleRoutes() {
             auto body = json::load(req.body);
             int tagId = body["tag"].t() == json::type::Null ? 0 : body["tag"].i();
             try {
-                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["time"].s(), body["done"].b(), tagId);
+                updateScheduleItem(userId, scheduleItemId, body["name"].s(), body["date"].s(), body["time"].s(), body["notes"].s(), body["done"].b(), tagId);
             } catch (exception &e) {
                 return response(404);
             }

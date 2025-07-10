@@ -14,6 +14,7 @@ struct ScheduleItem {
     string name;
     string date;
     string time;
+    string notes;
     bool done;
     int tagId;
 };

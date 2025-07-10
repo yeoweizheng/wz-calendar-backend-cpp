@@ -40,20 +40,20 @@ void updateUser(int userId, string username, string password) {
 
 vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDate, int tagId) {
     vector<ScheduleItem> scheduleItems;
-    auto populateScheduleItems = [&](int id, string name, string date, string time, bool done, int tagId) {
-        ScheduleItem scheduleItem = { id, name, date, time, done, tagId };
+    auto populateScheduleItems = [&](int id, string name, string date, string time, string notes, bool done, int tagId) {
+        ScheduleItem scheduleItem = { id, name, date, time, notes, done, tagId };
         scheduleItems.push_back(scheduleItem);
     };
     if (tagId == 0) {
-        *db << "SELECT id, name, date, time, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) ORDER BY time ASC NULLS LAST, id ASC;"
+        *db << "SELECT id, name, date, time, notes, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) ORDER BY time ASC NULLS LAST, id ASC;"
             << userId << startDate << endDate
             >> populateScheduleItems;
     } else if (tagId == -1) {
-            *db << "SELECT id, name, date, time, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) AND tag_id IS NULL ORDER BY time ASC NULLS LAST, id ASC;"
+            *db << "SELECT id, name, date, time, notes, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) AND tag_id IS NULL ORDER BY time ASC NULLS LAST, id ASC;"
                 << userId << startDate << endDate
                 >> populateScheduleItems;
     } else {
-        *db << "SELECT id, name, date, time, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) AND tag_id = ? ORDER BY time ASC NULLS LAST, id ASC;"
+        *db << "SELECT id, name, date, time, notes, done, tag_id FROM scheduleitem WHERE user_id = ? AND date >= date(?) AND date <= date(?) AND tag_id = ? ORDER BY time ASC NULLS LAST, id ASC;"
             << userId << startDate << endDate << tagId
             >> populateScheduleItems;
     }
@@ -63,32 +63,32 @@ vector<ScheduleItem> getScheduleItems(int userId, string startDate, string endDa
 vector<ScheduleItem> getScheduleItems(int userId, string searchStr) {
     vector<ScheduleItem> scheduleItems;
     searchStr = "%" + searchStr + "%";
-    *db << "SELECT id, name, date, time, done, tag_id FROM scheduleitem WHERE user_id = ? AND done = false AND name LIKE ? ORDER BY date ASC, time ASC;"
+    *db << "SELECT id, name, date, time, notes, done, tag_id FROM scheduleitem WHERE user_id = ? AND done = false AND name LIKE ? ORDER BY date ASC, time ASC;"
         << userId << searchStr
-        >> [&](int id, string name, string date, string time, bool done, int tagId) {
-            ScheduleItem scheduleItem = { id, name, date, time, done, tagId };
+        >> [&](int id, string name, string date, string time, string notes, bool done, int tagId) {
+            ScheduleItem scheduleItem = { id, name, date, time, notes, done, tagId };
             scheduleItems.push_back(scheduleItem);
         };
     return scheduleItems;
 }
 
-int insertScheduleItem(int userId, string name, string date, string time, bool done, int tagId) {
+int insertScheduleItem(int userId, string name, string date, string time, string notes, bool done, int tagId) {
     if (tagId != 0) checkTagExists(userId, tagId);
     if (tagId == 0) {
         if (time == "") {
-            *db << "INSERT INTO scheduleitem (user_id, name, date, done) VALUES (?, ?, ?, ?);"
-                << userId << name << date << done;
+            *db << "INSERT INTO scheduleitem (user_id, name, date, notes, done) VALUES (?, ?, ?, ?, ?);"
+                << userId << name << date << notes << done;
         } else {
-            * db << "INSERT INTO scheduleitem (user_id, name, date, time, done) VALUES (?, ?, ?, ?, ?);"
-                << userId << name << date << time << done;
+            * db << "INSERT INTO scheduleitem (user_id, name, date, time, notes, done) VALUES (?, ?, ?, ?, ?, ?);"
+                << userId << name << date << time << notes << done;
         }
     } else {
         if (time == "") {
-            *db << "INSERT INTO scheduleitem (user_id, name, date, done, tag_id) VALUES (?, ?, ?, ?, ?);"
-                << userId << name << date << done << tagId;
+            *db << "INSERT INTO scheduleitem (user_id, name, date, notes, done, tag_id) VALUES (?, ?, ?, ?, ?, ?);"
+                << userId << name << date << notes << done << tagId;
         } else {
-            *db << "INSERT INTO scheduleitem (user_id, name, date, time, done, tag_id) VALUES (?, ?, ?, ?, ?, ?);"
-                << userId << name << date << time << done << tagId;
+            *db << "INSERT INTO scheduleitem (user_id, name, date, time, notes, done, tag_id) VALUES (?, ?, ?, ?, ?, ?, ?);"
+                << userId << name << date << time << notes << done << tagId;
         }
     }
     return db->last_insert_rowid();
@@ -105,31 +105,31 @@ void checkScheduleItemExists(int userId, int scheduleItemId) {
 ScheduleItem getScheduleItem(int userId, int scheduleItemId) {
     checkScheduleItemExists(userId, scheduleItemId);
     ScheduleItem scheduleItem;
-    *db << "SELECT id, name, date, time, done, tag_id FROM scheduleitem WHERE user_id = ? AND id = ?;"
+    *db << "SELECT id, name, date, time, notes, done, tag_id FROM scheduleitem WHERE user_id = ? AND id = ?;"
         << userId << scheduleItemId
-        >> [&](int id, string name, string date, string time, bool done, int tagId) {
-            scheduleItem = { id, name, date, time, done, tagId };
+        >> [&](int id, string name, string date, string time, string notes, bool done, int tagId) {
+            scheduleItem = { id, name, date, time, notes, done, tagId };
         };
     return scheduleItem;
 }
 
-void updateScheduleItem(int userId, int scheduleItemId, string name, string date, string time, bool done, int tagId) {
+void updateScheduleItem(int userId, int scheduleItemId, string name, string date, string time, string notes, bool done, int tagId) {
     checkScheduleItemExists(userId, scheduleItemId);
     if (tagId == 0) {
         if (time == "") {
-            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = NULL, done = ?, tag_id = NULL WHERE id = ? AND user_id = ?;"
-                << name << date << done << scheduleItemId << userId;
+            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = NULL, notes = ?, done = ?, tag_id = NULL WHERE id = ? AND user_id = ?;"
+                << name << date << notes << done << scheduleItemId << userId;
         } else {
-            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = ?, done = ?, tag_id = NULL WHERE id = ? AND user_id = ?;"
-                << name << date << time << done << scheduleItemId << userId;
+            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = ?, notes = ?, done = ?, tag_id = NULL WHERE id = ? AND user_id = ?;"
+                << name << date << time << notes << done << scheduleItemId << userId;
         }
     } else {
         if (time == "") {
-            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = NULL, done = ?, tag_id = ? WHERE id = ? AND user_id = ?;"
-                << name << date << done << tagId << scheduleItemId << userId;
+            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = NULL, notes = ?, done = ?, tag_id = ? WHERE id = ? AND user_id = ?;"
+                << name << date << notes << done << tagId << scheduleItemId << userId;
         } else {
-            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = ?, done = ?, tag_id = ? WHERE id = ? AND user_id = ?;"
-                << name << date << time << done << tagId << scheduleItemId << userId;
+            *db << "UPDATE scheduleitem SET name = ?, date = ?, time = ?, notes = ?, done = ?, tag_id = ? WHERE id = ? AND user_id = ?;"
+                << name << date << time << notes << done << tagId << scheduleItemId << userId;
         }
     }
 }
